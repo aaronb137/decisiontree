@@ -2,8 +2,8 @@ import numpy as np
 import math as m
 
 def DT_train_binary(X,Y,max_depth):
-    print("test")
-
+    if (len(X) != len(Y)):
+        raise ValueError('Param 1 and 2 require same length arrays..')
 def DT_test_binary(X,Y,DT):
     print("fart1")
 

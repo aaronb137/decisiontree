@@ -1,7 +1,8 @@
 import numpy as np
+import decision_trees as dt
 
-# file_name = "cat_dog_data.csv"
-# data = np.genfromtxt(file_name, dtype=str, delimiter=',')
+file_name = "cat_dog_data.csv"
+data = np.genfromtxt(file_name, dtype=str, delimiter=',')
 
 # array builder
 def build_nparray(data):
@@ -58,12 +59,3 @@ def build_dict(data):
         label_dict[len(label_dict)] = output_values[i]
 
     return variable_dict, label_dict
-
-# vector_values, label_values = build_nparray(data)
-# print(vector_values,label_values)
-
-# vectors, labels = build_list(data)
-# print(vectors, labels)
-
-# variable, label = build_dict(data)
-# print(variable)

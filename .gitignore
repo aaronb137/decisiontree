@@ -1,2 +1,4 @@
 .gitignore
 Project1.pdf
+.vscode
+__pycache__
