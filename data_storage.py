@@ -59,3 +59,10 @@ def build_dict(data):
         label_dict[len(label_dict)] = output_values[i]
 
     return variable_dict, label_dict
+
+feature_vals, label_vals = build_nparray(data)
+# print(feature_vals)
+entropyList = dt.CalculateFeatureEntropy(feature_vals, label_vals)
+# dt.DT_train_binary(feature_vals, label_vals, 4)
+
+print(entropyList)
