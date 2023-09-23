@@ -1,18 +1,21 @@
 import numpy as np
 import math as m
 
+# class approach for implementing tree for decision tree
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
 
+# helper function to calculate entropy for features/training set
 def entropyFormula(yesVals, noVals, totalVals):
     if yesVals == 0 or noVals == 0:
         return 0
 
     return -(yesVals/totalVals) * m.log2(yesVals/totalVals) - (noVals/totalVals) * m.log2(noVals/totalVals)
 
+# calculate entropy of entire training set
 def CalculateTotalEntropy(Y):
     totalLabels = len(Y)
     yesLabels = np.count_nonzero(Y == 1)
@@ -20,6 +23,7 @@ def CalculateTotalEntropy(Y):
 
     return entropyFormula(yesLabels, noLabels, totalLabels)
 
+# calculate entropy of each feature inside training set
 def CalculateFeatureEntropy(X, Y):
     featEntropy = {}
     proportionCnt = {}
@@ -48,16 +52,14 @@ def CalculateFeatureEntropy(X, Y):
         yesEntropy = entropyFormula(correctYesLabelCt, incorrectYesLabelCt, totalYes)
         
         featEntropy[i] = (noEntropy, yesEntropy)
-
-        # look through notes for this
         proportionCnt[i] = (totalNo, totalYes)
     
     return featEntropy, proportionCnt
 
+# calculate information gain to decide construction of decision tree
 def CalculateIG(totalEntropy, featEntropyList, proportionCnt):
     IG_result = {}
 
-    # totalEntropy - (Yes/Total * YesfeatEntropyList + No/Total * NofeatEntropyList)   
     for i in range( len(featEntropyList) ):
         totalNo, totalYes = proportionCnt[i][0], proportionCnt[i][1]
         noEntropy, yesEntropy = featEntropyList[i][0], featEntropyList[i][1]
@@ -67,7 +69,10 @@ def CalculateIG(totalEntropy, featEntropyList, proportionCnt):
     
     return IG_result
 
+# train decision tree model on given training feature data (X), training labels (Y), and 
+# train until provided max depth (-1 if we want to continue until IG is 0 or we run out of features)
 
+# * REQUIRES EQUAL LENGTH BETWEEN TRAINING FEATURE DATA AND TRAINING LABELS
 def DT_train_binary(X,Y,max_depth):
     if (len(X) != len(Y)):
         raise ValueError('Param 1 and 2 require same length arrays..')
@@ -76,9 +81,8 @@ def DT_train_binary(X,Y,max_depth):
     featEntropyList, proportionCnt = CalculateFeatureEntropy(X, Y)
     training_set_IG = CalculateIG(totalEntropy, featEntropyList, proportionCnt)
 
-    # while depth of decision tree != max_depth
-    # if max_depth = -1, then continue until exists
-    # use recursion for each depth
+    #TODO: implement tree using classes/nodes. use recursion to build tree and keep track of current depth of tree.
+            
 
 
 def DT_test_binary(X,Y,DT):
@@ -88,7 +92,7 @@ def DT_make_prediction(x,DT):
     print("fart2")
 
 
-#622 section
+#grad section
 def DT_train_real(X,Y,max_depth):
     print("fart3")
 
