@@ -22,6 +22,7 @@ def CalculateTotalEntropy(Y):
 
 def CalculateFeatureEntropy(X, Y):
     featEntropy = {}
+    proportionCnt = {}
 
     _, cols = np.shape(X)
     
@@ -47,17 +48,37 @@ def CalculateFeatureEntropy(X, Y):
         yesEntropy = entropyFormula(correctYesLabelCt, incorrectYesLabelCt, totalYes)
         
         featEntropy[i] = (noEntropy, yesEntropy)
-    
-    return featEntropy
 
-def CalculateIG(entropy, Y):
-    print(2)
+        # look through notes for this
+        proportionCnt[i] = (totalNo, totalYes)
+    
+    return featEntropy, proportionCnt
+
+def CalculateIG(totalEntropy, featEntropyList, proportionCnt):
+    IG_result = {}
+
+    # totalEntropy - (Yes/Total * YesfeatEntropyList + No/Total * NofeatEntropyList)   
+    for i in range( len(featEntropyList) ):
+        totalNo, totalYes = proportionCnt[i][0], proportionCnt[i][1]
+        noEntropy, yesEntropy = featEntropyList[i][0], featEntropyList[i][1]
+
+        total_training_data = totalYes + totalNo
+        IG_result[i] = totalEntropy - ( ( (totalYes/total_training_data) * yesEntropy) + ( (totalNo/total_training_data) * noEntropy ) )
+    
+    return IG_result
+
 
 def DT_train_binary(X,Y,max_depth):
     if (len(X) != len(Y)):
         raise ValueError('Param 1 and 2 require same length arrays..')
+    
     totalEntropy = CalculateTotalEntropy(Y)
-    print(totalEntropy)
+    featEntropyList, proportionCnt = CalculateFeatureEntropy(X, Y)
+    training_set_IG = CalculateIG(totalEntropy, featEntropyList, proportionCnt)
+
+    # while depth of decision tree != max_depth
+    # if max_depth = -1, then continue until exists
+    # use recursion for each depth
 
 
 def DT_test_binary(X,Y,DT):
@@ -66,6 +87,8 @@ def DT_test_binary(X,Y,DT):
 def DT_make_prediction(x,DT):
     print("fart2")
 
+
+#622 section
 def DT_train_real(X,Y,max_depth):
     print("fart3")
 
