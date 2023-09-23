@@ -8,6 +8,21 @@ class TreeNode:
         self.left = left
         self.right = right
 
+def maxDepth(root: TreeNode) -> int:
+    stack = [ [root, 1] ]
+    maxDepth = 0
+
+    while stack:
+        node, depth = stack.pop()
+
+        if node: 
+            maxDepth = max(depth, maxDepth)
+            stack.append( [node.left, 1 + depth] )
+            stack.append( [node.right, 1 + depth] )
+
+    return maxDepth
+
+
 # helper function to calculate entropy for features/training set
 def entropyFormula(yesVals, noVals, totalVals):
     if yesVals == 0 or noVals == 0:
@@ -81,9 +96,18 @@ def DT_train_binary(X,Y,max_depth):
     featEntropyList, proportionCnt = CalculateFeatureEntropy(X, Y)
     training_set_IG = CalculateIG(totalEntropy, featEntropyList, proportionCnt)
 
-    #TODO: implement tree using classes/nodes. use recursion to build tree and keep track of current depth of tree.
-            
+    root = TreeNode(None)
+    currentDepth = 0
 
+    #TODO: implement tree using classes/nodes. use recursion to build tree and keep track of current depth of tree.
+
+
+    if max_depth != -1:
+        while currentDepth != max_depth:
+            currentDepth = maxDepth(root)
+
+    #TODO: implement logic where we keep learning until we run out of features or IG is 0
+    
 
 def DT_test_binary(X,Y,DT):
     print("fart1")
@@ -98,3 +122,4 @@ def DT_train_real(X,Y,max_depth):
 
 def DT_test_real(X,Y,DT):
     print("fart4")
+
