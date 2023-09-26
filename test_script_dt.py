@@ -24,6 +24,6 @@ for index in range(len(d_samples)):
 print(d_labels,"\n")
 
 max_depth = 3
-DT = dt.DT_train_binary(a_samples,a_labels,max_depth)
+DT = dt.DT_train_binary(a_samples,a_labels, 3)
 test_acc = dt.DT_test_binary(a_samples,a_labels,DT)
 print("DT:",test_acc)

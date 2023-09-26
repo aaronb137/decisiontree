@@ -37,7 +37,7 @@ def build_list(data):
 
 # dictionary builder
 def build_dict(data):
-    variable_dict = {}
+    feature_dict = {}
     label_dict = {}
 
     header_values = data[0, :-1]
@@ -53,14 +53,9 @@ def build_dict(data):
         array_dict = {}
         for value_index, value in enumerate(array):
             array_dict[header_values[value_index]] = value
-        variable_dict[len(variable_dict)] = array_dict
+        feature_dict[len(feature_dict)] = array_dict
     
     for i in range(len(output_values)):
         label_dict[len(label_dict)] = output_values[i]
 
-    return variable_dict, label_dict
-
-feature_vals, label_vals = build_nparray(data)
-
-#testing function
-dt.DT_train_binary(feature_vals, label_vals, 3)
+    return feature_dict, label_dict
