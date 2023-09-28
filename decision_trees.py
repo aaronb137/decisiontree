@@ -20,25 +20,6 @@ def calculate_entropy(Y):
     ps = freqCount/len(Y)
     return -np.sum([p * np.log2(p) for p in ps if p>0])
 
-# determine highest IG at node
-def best_split(X, y, feat_idxs):
-    best_gain = -1
-    split_idx, split_threshold = None, None
-
-    for feat_idx in feat_idxs:
-        X_column = X[:, feat_idx]
-        thresholds = np.unique(X_column)
-
-        for thr in thresholds:
-            gain = info_gain(y, X_column, thr)
-
-            if gain > best_gain:
-                best_gain = gain
-                split_idx = feat_idx
-                split_threshold = thr
-
-    return split_idx, split_threshold
-
 # calculate information gain to decide construction of decision tree
 def info_gain(y,  X_col, threshold):
     system_entropy = calculate_entropy(y)
