@@ -1,6 +1,7 @@
 import numpy as np
 from collections import Counter
 
+# * decision tree functions/classes
 # class data structure for tree
 class Node:
     def __init__(self, feature=None, threshold=None, left=None, right=None,*,value=None):
@@ -13,7 +14,7 @@ class Node:
     def is_leaf_node(self):
         return self.value is not None
 
-# # calculate entropy of entire training set
+# calculate entropy of entire training set
 def calculate_entropy(Y):
     freqCount = np.bincount(Y)
     ps = freqCount/len(Y)
@@ -56,11 +57,13 @@ def info_gain(y,  X_col, threshold):
     information_gain = system_entropy - child_entropy
     return information_gain
 
+# split our data (used when we create child nodes)
 def split(X_column, split_thresh):
-    left_idxs = np.argwhere(X_column <= split_thresh).flatten()
-    right_idxs = np.argwhere(X_column > split_thresh).flatten()
-    return left_idxs, right_idxs
+    left_indexes = np.argwhere(X_column <= split_thresh).flatten()
+    right_indexes = np.argwhere(X_column > split_thresh).flatten()
+    return left_indexes, right_indexes
 
+# find the highest IG and that will be our best split
 def best_split(X, Y, feat_indexes):
     best_gain = -1
     split_index, split_threshold = None, None
@@ -79,6 +82,7 @@ def best_split(X, Y, feat_indexes):
 
     return split_index, split_threshold
 
+# pick the label that occurs the most and return that label (for leaf nodes)
 def common_label(y):
     counter = Counter(y)
     value = counter.most_common(1)[0][0]
@@ -86,7 +90,6 @@ def common_label(y):
 
 # # train decision tree model on given training feature data (X), training labels (Y), and 
 # # train until provided max depth (-1 if we want to continue until IG is 0 or we run out of features)
-
 def DT_train_binary(X,Y,max_depth):
     if (len(X) != len(Y)):
         raise ValueError('Param 1 and 2 require same length arrays..')
@@ -99,16 +102,18 @@ def DT_train_binary(X,Y,max_depth):
     select_num_feats = None
     root_node = None
 
+    # we fit our data and generate our tree
     def fit(X, Y):
         global select_num_feats
         global min_samples_split
         global root_node
 
         select_num_feats = X.shape[1] if not select_num_feats else min(X.shape[1, select_num_feats])
-        root_node = create_tree(X, Y)
+        root_node = create_tree(X, Y, depth=1)
 
+    # generate our tree on X feature data and Y data labels with a depth counter
     def create_tree(X, Y, depth=1):
-        # ! check stopping criteria
+        # * check stopping criteria
         if (max_depth != -1 and depth >= max_depth):
             leaf_value = common_label(Y)
             return Node(value=leaf_value)
@@ -116,16 +121,16 @@ def DT_train_binary(X,Y,max_depth):
         num_samples, num_features = X.shape
         num_labels = len(np.unique(Y))
 
-        # ! check stopping criteria
+        # * check stopping criteria
         if (num_labels == 1 or num_samples<min_samples_split):
             leaf_value = common_label(Y)
             return Node(value=leaf_value)
         
-        # ! find best split
+        # * find best split
         feat_indexs = np.random.choice(num_features, select_num_feats, replace=False)
         best_feature, best_threshold = best_split(X, Y, feat_indexs)
         
-        # ! create child nodes
+        # * create child nodes
         left_indexes, right_indexes = split(X[:, best_feature], best_threshold)
         left = create_tree(X[left_indexes, :], Y[left_indexes], depth + 1)
         right = create_tree(X[right_indexes, :], Y[right_indexes], depth + 1)
@@ -136,27 +141,81 @@ def DT_train_binary(X,Y,max_depth):
 
     return root_node
 
+# check how closely the predictions from decision tree, DT made on
+# feature data X and compare with data labels Y
+# returns accuracy on how many correct predictions model made
 def DT_test_binary(X,Y,DT):
     predictions = DT_make_prediction(X, DT)
-    print(predictions)
-    correct_predictions = np.sum((predictions == Y))
-    total_predictions = len(Y)
-
-    accuracy = (correct_predictions/total_predictions)
-
+    accuracy = np.sum((Y == predictions)) / len(Y)
     return accuracy
 
+def RF_test_random_forest(X, Y, RF):
+    final_predictions, echtree_preds = RF_make_prediction(X, RF)
+
+    for index, pred in enumerate(echtree_preds):
+        tree_pred = accuracy = np.sum((Y == pred)) / len(Y)
+        print(f"DT {index}: {tree_pred}")
+
+    accuracy = np.sum(Y == final_predictions) / len(Y)
+    return accuracy
+
+# takes feature data X and a trained DT as Node
+# and traverses the tree until it reaches a classification leaf node
 def traverse_tree(X, Node: Node):
     if Node is None:
-        return Node
+        return None
     if Node.is_leaf_node():
         return Node.value
     if X[Node.feature] <= Node.threshold:
         return traverse_tree(X, Node.left)
     return traverse_tree(X, Node.right)
 
+# * prediction functions (DT, RF)
 def DT_make_prediction(X,DT):
     return np.array([traverse_tree(x, DT) for x in X])
+
+def RF_make_prediction(X, RF):
+    individual_predictions = np.array([DT_make_prediction(X, tree) for tree in trees])
+    tree_predictions = np.swapaxes(individual_predictions, 0, 1)
+    final_predictions = np.array([common_label(pred) for pred in tree_predictions])
+    return final_predictions, individual_predictions
+
+# * random forest functions
+def RF_build_random_forest(X, Y, max_depth, num_of_trees):
+    global select_num_feats
+    global min_samples_split
+    global trees
+
+    min_samples_split = 2
+    select_num_feats = None
+    trees = []
+
+    def prep_samples(X, Y):
+        num_samples = X.shape[0]
+        subset_size = int(num_samples * 0.10)
+        indexes = np.random.choice(num_samples, subset_size, replace=True)        
+        return X[indexes], Y[indexes]
+
+    def fitRF(X, Y):
+        global select_num_feats
+        global min_samples_split
+        global trees
+
+        for _ in range(num_of_trees):
+            X_samples, Y_samples = prep_samples(X, Y)
+            tree = DT_train_binary(X_samples, Y_samples, max_depth)
+
+            trees.append(tree)
+
+    fitRF(X, Y)
+
+    return trees
+
+
+
+
+
+
 
 
 
